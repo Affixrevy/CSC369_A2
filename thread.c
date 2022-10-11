@@ -5,6 +5,8 @@
 #include "thread.h"
 #include "interrupt.h"
 
+#define READY_QUEUE_NO_ITEM (-10)
+
 /* This is the wait queue structure */
 struct wait_queue {
     /* ... Fill this in Assignment 3 ... */
@@ -25,14 +27,14 @@ enum thread_states {READY = 0, RUNNING = 1, EXITED = 2};
 struct thread {
     /* ... Fill this in ... */
     Tid thread_id;
-    struct thread *next_thread;     // The next thread in the queue to executed
+    // struct thread *next_thread;     // The next thread in the queue to executed
     int thread_state;               // This can have three states: READY (0), RUNNING (1), EXITED (2)
     ucontext_t thread_context;      // Save the context of the thread
 };
 
 // Function pre-declarations
 
-static Tid switch_threads(struct thread *next_thread);
+static Tid change_threads(struct thread *next_thread);
 
 /* Threads data structures
  *  - Linked list queue for ready
@@ -45,8 +47,22 @@ struct thread all_threads[THREAD_MAX_THREADS];
 struct thread *running;
 struct thread *killed;
 
-Tid all_tid[THREAD_MAX_THREADS];
+Tid all_tid[THREAD_MAX_THREADS], ready_queue[THREAD_MAX_THREADS];
 
+int ready_queue_head, ready_queue_tail;
+
+static void ready_queue_enqueue(Tid new_id) {
+    ready_queue[ready_queue_head] = new_id;
+    ready_queue_head++;
+    ready_queue_head %= THREAD_MAX_THREADS;
+}
+
+static Tid ready_queue_dequeue() {
+    Tid result = ready_queue[ready_queue_tail];
+    ready_queue[ready_queue_tail] = READY_QUEUE_NO_ITEM;
+    ready_queue_tail++;
+    ready_queue_tail %= THREAD_MAX_THREADS;
+}
 
 void
 thread_init (void)
@@ -61,6 +77,11 @@ thread_init (void)
         all_tid[i] = 0;
         all_threads[i].thread_id = i;
     }
+
+    // Set up ready queue
+    memset(ready_queue, READY_QUEUE_NO_ITEM, sizeof ready_queue);
+    ready_queue_head = 0;
+    ready_queue_tail = 0;
 
     // Manually create first thread
     all_tid[0] = 1;
@@ -105,14 +126,44 @@ thread_yield (Tid want_tid)
 {
 
     // TODO: SUGGESTED FIRST
-    //TBD();
+    // TBD();
 
     if (want_tid == THREAD_ANY) {
+        // Get the next available thread
+
+        int check_index = ready_queue_tail;
+        while (ready_queue[check_index] == READY_QUEUE_NO_ITEM) {
+            check_index++;
+            check_index %= THREAD_MAX_THREADS;
+        }
+
+        return change_threads(&all_threads[check_index]);
 
     } else if (want_tid == THREAD_SELF) {
-
+        // Does nothing as current thread continues
+        return thread_id();
     } else {
+        if (!all_tid[want_tid]
+        || all_threads[want_tid].thread_state == EXITED
+        || want_tid < THREAD_SELF
+        || want_tid > THREAD_MAX_THREADS) {
+            // TODO: Kill some zombie processes
 
+            return THREAD_INVALID;
+        }
+
+        int check_index = ready_queue_tail;
+        while (ready_queue[check_index] != want_tid) {
+            check_index++;
+            check_index %= THREAD_MAX_THREADS;
+        }
+
+        ready_queue[check_index] = ready_queue[ready_queue_tail];
+        ready_queue[ready_queue_tail] = READY_QUEUE_NO_ITEM;
+        ready_queue_tail++;
+        ready_queue_tail %= THREAD_MAX_THREADS;
+
+        return change_threads(&all_threads[want_tid]);
     }
 
     return THREAD_FAILED;
@@ -129,6 +180,26 @@ thread_kill (Tid tid)
 {
     TBD();
     return THREAD_FAILED;
+}
+
+Tid change_thread (struct thread *next_thread) {
+
+    struct thread *old_thread = running;
+
+    getcontext(&old_thread->thread_context);
+
+    ready_queue_enqueue(old_thread->thread_id);
+
+    setcontext(next_thread->thread_context);
+
+    running = next_thread;
+
+    if (thread_id() == next_thread->thread_id) {
+        return thread_id();
+    }
+
+    return THREAD_FAILED;
+
 }
 
 /**************************************************************************
