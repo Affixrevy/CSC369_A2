@@ -137,6 +137,9 @@ thread_yield (Tid want_tid)
 //            check_index++;
 //            check_index %= THREAD_MAX_THREADS;
 //        }
+        if (ready_queue_head == ready_queue_tail) {
+            return THREAD_NONE;
+        }
 
         Tid next_thread = ready_queue_dequeue();
 
