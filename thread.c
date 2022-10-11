@@ -159,8 +159,9 @@ thread_create (void (*fn) (void *), void *parg)
                                                                                         // stacks grow down
 
     new_thread->thread_state = READY;
-    ready_queue_enqueue(new_thread->thread_id);
-//    thread_yield(new_thread->thread_id);
+    Tid new_id = new_thread->thread_id;
+    ready_queue_enqueue(new_id);
+    thread_yield(new_id);
 
     return new_thread->thread_id;
 }
