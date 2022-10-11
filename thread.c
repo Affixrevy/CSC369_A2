@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ucontext.h>
 #include <string.h>
+#include <setjmp.h>
 #include "thread.h"
 #include "interrupt.h"
 
@@ -13,7 +14,7 @@ struct wait_queue {
 };
 
 // enum for thread state clarity
-enum thread_states {READY = 0, RUNNING = 1, EXITED = 2};
+enum thread_states {READY = 0, RUNNING = 1, EXITED = 2, UNUSED = 3};
 
 
 /* This is the thread control block */
@@ -77,6 +78,7 @@ thread_init (void)
     for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
         all_tid[i] = 0;
         all_threads[i].thread_id = i;
+        all_threads[i].thread_state = UNUSED;
     }
 
     // Set up ready queue
@@ -118,7 +120,47 @@ thread_stub (void (*thread_main)(void *), void *arg)
 Tid
 thread_create (void (*fn) (void *), void *parg)
 {
-    TBD();
+    //TBD();
+    struct thread *new_thread;
+    ucontext_t *new_thread_context;
+
+    // Get a Tid for new thread
+    int found_thread = 0;
+    for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
+        if(all_threads[i].thread_state == UNUSED) {
+            new_thread = &all_threads[i];
+            found_thread = 1;
+            break;
+        }
+    }
+
+    if (!found_thread)
+        return THREAD_NOMORE;
+
+    // Allocate memory for the thread
+    void *stack_ptr = malloc(THREAD_MIN_STACK);
+    if (stack_ptr == NULL) {
+        return THREAD_NOMEMORY;
+    }
+
+    // Set up thread context
+    new_thread_context = &new_thread->thread_context;
+    getcontext(new_thread_context);
+
+    new_thread_context->uc_mcontext.gregs[REG_RIP] = (unsigned long) thread_stub;       // Set program counter
+    new_thread_context->uc_mcontext.gregs[REG_RDI] = (unsigned long) fn;                // Set up arguments
+    new_thread_context->uc_mcontext.gregs[REG_RSI] = (unsigned long) parg;              // Set up arguments
+
+    new_thread_context->uc_stack.ss_sp = stack_ptr;                                     // Set thread stack
+    new_thread_context->uc_stack.ss_size = THREAD_MIN_STACK;                            // Set thread stack size
+
+    void *stack_start = stack_ptr + THREAD_MIN_STACK - 8;
+    new_thread_context->uc_mcontext.gregs[REG_RSP] = (unsigned long) stack_start;       // Start of the stack since
+                                                                                        // stacks grow down
+
+    new_thread->thread_state = READY;
+    ready_queue_enqueue(new_thread->thread_id);
+
     return THREAD_FAILED;
 }
 
