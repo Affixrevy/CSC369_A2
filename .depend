@@ -1,0 +1,2 @@
+test_basic.o: test_basic.c thread.h test_thread.h
+thread.o: thread.c thread.h interrupt.h
