@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <ucontext.h>
-#include <libc.h>
 #include "thread.h"
 #include "interrupt.h"
 
