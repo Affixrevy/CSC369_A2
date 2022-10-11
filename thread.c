@@ -155,6 +155,13 @@ thread_yield (Tid want_tid)
             return THREAD_INVALID;
         }
 
+
+        struct thread *old_thread = running;
+
+        getcontext(&old_thread->thread_context);
+
+        ready_queue_enqueue(old_thread->thread_id);
+
         int check_index = ready_queue_tail;
 //        while (ready_queue[check_index] != want_tid) {
 //            check_index++;
@@ -194,12 +201,6 @@ thread_kill (Tid tid)
 }
 
 Tid change_threads (struct thread *next_thread) {
-
-    struct thread *old_thread = running;
-
-    getcontext(&old_thread->thread_context);
-
-    ready_queue_enqueue(old_thread->thread_id);
 
     setcontext(&next_thread->thread_context);
 
