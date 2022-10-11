@@ -91,7 +91,7 @@ thread_init (void)
     // Set global variables
     running = &all_threads[0];
     killed = NULL;
-
+    
 }
 
 Tid
@@ -156,11 +156,19 @@ thread_yield (Tid want_tid)
         }
 
         int check_index = ready_queue_tail;
-        while (ready_queue[check_index] != want_tid) {
-            check_index++;
-            check_index %= THREAD_MAX_THREADS;
-        }
+//        while (ready_queue[check_index] != want_tid) {
+//            check_index++;
+//            check_index %= THREAD_MAX_THREADS;
+//        }
 
+        for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
+            if (ready_queue[(i + check_index) % THREAD_MAX_THREADS] == want_tid) {
+                check_index = (i + check_index) % THREAD_MAX_THREADS;
+                goto found_thread;
+            }
+        }
+        
+        found_thread:
         ready_queue[check_index] = ready_queue[ready_queue_tail];
         ready_queue[ready_queue_tail] = READY_QUEUE_NO_ITEM;
         ready_queue_tail++;
