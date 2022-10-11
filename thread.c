@@ -147,7 +147,7 @@ thread_create (void (*fn) (void *), void *parg)
     new_thread_context = &new_thread->thread_context;
     getcontext(new_thread_context);
 
-    new_thread_context->uc_mcontext.gregs[REG_RIP] = (unsigned long) &thread_stub;       // Set program counter
+    new_thread_context->uc_mcontext.gregs[REG_RIP] = (unsigned long) &thread_stub;      // Set program counter
     new_thread_context->uc_mcontext.gregs[REG_RDI] = (unsigned long) fn;                // Set up arguments
     new_thread_context->uc_mcontext.gregs[REG_RSI] = (unsigned long) parg;              // Set up arguments
 
@@ -161,8 +161,8 @@ thread_create (void (*fn) (void *), void *parg)
     new_thread->thread_state = READY;
     Tid new_id = new_thread->thread_id;
     ready_queue_enqueue(new_id);
-    thread_yield(new_id);
-
+//    thread_yield(new_id);
+    setcontext(&new_thread->thread_context);
     return new_thread->thread_id;
 }
 
