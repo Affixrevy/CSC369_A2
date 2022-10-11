@@ -184,7 +184,7 @@ thread_yield (Tid want_tid)
 
 //        return change_threads(&);
 
-        setcontext(all_threads[want_tid].thread_context);
+        setcontext(&(all_threads[want_tid].thread_context));
         running = &all_threads[want_tid];
         running->thread_state = RUNNING;
     }
