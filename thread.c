@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <ucontext.h>
+#include <string.h>
 #include "thread.h"
 #include "interrupt.h"
 
@@ -61,6 +62,7 @@ static Tid ready_queue_dequeue() {
     ready_queue[ready_queue_tail] = READY_QUEUE_NO_ITEM;
     ready_queue_tail++;
     ready_queue_tail %= THREAD_MAX_THREADS;
+    return result;
 }
 
 void
@@ -181,7 +183,7 @@ thread_kill (Tid tid)
     return THREAD_FAILED;
 }
 
-Tid change_thread (struct thread *next_thread) {
+Tid change_threads (struct thread *next_thread) {
 
     struct thread *old_thread = running;
 
@@ -189,7 +191,7 @@ Tid change_thread (struct thread *next_thread) {
 
     ready_queue_enqueue(old_thread->thread_id);
 
-    setcontext(next_thread->thread_context);
+    setcontext(&next_thread->thread_context);
 
     running = next_thread;
 
