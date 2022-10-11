@@ -149,10 +149,10 @@ thread_yield (Tid want_tid)
         // Does nothing as current thread continues
         return thread_id();
     } else {
-        if (!all_tid[want_tid]
-        || all_threads[want_tid].thread_state == EXITED
-        || want_tid < THREAD_SELF
-        || want_tid > THREAD_MAX_THREADS) {
+        if (want_tid < THREAD_SELF
+        || want_tid > THREAD_MAX_THREADS
+        || !all_tid[want_tid]
+        || all_threads[want_tid].thread_state == EXITED) {
             // TODO: Kill some zombie processes
 
             return THREAD_INVALID;
