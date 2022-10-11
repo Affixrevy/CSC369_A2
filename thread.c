@@ -142,7 +142,7 @@ thread_yield (Tid want_tid)
 
         return change_threads(&all_threads[next_thread]);
 
-    } else if (want_tid == THREAD_SELF) {
+    } else if (want_tid == THREAD_SELF || want_tid == thread_id()) {
         // Does nothing as current thread continues
         return thread_id();
     } else {
@@ -187,6 +187,7 @@ thread_yield (Tid want_tid)
         setcontext(&(all_threads[want_tid].thread_context));
         running = &all_threads[want_tid];
         running->thread_state = RUNNING;
+        return thread_id();
     }
 
     return THREAD_FAILED;
