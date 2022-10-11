@@ -132,13 +132,15 @@ thread_yield (Tid want_tid)
     if (want_tid == THREAD_ANY) {
         // Get the next available thread
 
-        int check_index = ready_queue_tail;
-        while (ready_queue[check_index] == READY_QUEUE_NO_ITEM) {
-            check_index++;
-            check_index %= THREAD_MAX_THREADS;
-        }
+//        int check_index = ready_queue_tail;
+//        while (ready_queue[check_index] == READY_QUEUE_NO_ITEM) {
+//            check_index++;
+//            check_index %= THREAD_MAX_THREADS;
+//        }
 
-        return change_threads(&all_threads[check_index]);
+        Tid next_thread = ready_queue_dequeue();
+
+        return change_threads(&all_threads[next_thread]);
 
     } else if (want_tid == THREAD_SELF) {
         // Does nothing as current thread continues
