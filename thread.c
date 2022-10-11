@@ -161,6 +161,7 @@ thread_yield (Tid want_tid)
         getcontext(&old_thread->thread_context);
 
         ready_queue_enqueue(old_thread->thread_id);
+        old_thread->thread_state = READY;
 
         int check_index = ready_queue_tail;
 //        while (ready_queue[check_index] != want_tid) {
@@ -181,7 +182,11 @@ thread_yield (Tid want_tid)
         ready_queue_tail++;
         ready_queue_tail %= THREAD_MAX_THREADS;
 
-        return change_threads(&all_threads[want_tid]);
+//        return change_threads(&);
+
+        setcontext(all_threads[want_tid].thread_context);
+        running = &all_threads[want_tid];
+        running->thread_state = RUNNING;
     }
 
     return THREAD_FAILED;
