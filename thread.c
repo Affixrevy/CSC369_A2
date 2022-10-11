@@ -161,7 +161,7 @@ thread_create (void (*fn) (void *), void *parg)
     new_thread->thread_state = READY;
     ready_queue_enqueue(new_thread->thread_id);
 
-    return THREAD_FAILED;
+    return new_thread->thread_id;
 }
 
 Tid
