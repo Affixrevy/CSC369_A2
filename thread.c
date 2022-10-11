@@ -160,7 +160,7 @@ thread_create (void (*fn) (void *), void *parg)
 
     new_thread->thread_state = READY;
     ready_queue_enqueue(new_thread->thread_id);
-    thread_yield(new_thread->thread_id);
+//    thread_yield(new_thread->thread_id);
 
     return new_thread->thread_id;
 }
