@@ -160,7 +160,7 @@ thread_create (void (*fn) (void *), void *parg)
 
     new_thread->thread_state = READY;
     Tid new_id = new_thread->thread_id;
-    ready_queue_enqueue(new_id);
+//    ready_queue_enqueue(new_id);
 //    thread_yield(new_id);
     setcontext(&new_thread->thread_context);
     return new_thread->thread_id;
@@ -222,6 +222,7 @@ thread_yield (Tid want_tid)
                 goto found_thread;
             }
         }
+        return THREAD_NONE;
         
         found_thread:
         ready_queue[check_index] = ready_queue[ready_queue_tail];
