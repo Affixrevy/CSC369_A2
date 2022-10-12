@@ -196,10 +196,10 @@ thread_yield (Tid want_tid)
 
         fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d", running, next_tid);
 
-        struct thread *old_thread = running;
-        int err = getcontext(&(old_thread->thread_context));
+        Tid old_id = running;
+        int err = getcontext(&(all_threads[old_id].thread_context));
         assert(!err);
-        old_thread->thread_state = READY;
+        all_threads[old_id].thread_state = READY;
 
         running = next_tid;
         all_threads[next_tid].thread_state = RUNNING;
