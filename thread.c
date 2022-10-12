@@ -198,6 +198,8 @@ thread_yield (Tid want_tid)
 
         Tid old_id = running;
         int err = getcontext(&(all_threads[old_id].thread_context));
+        fprintf(stderr, "wahoooooo! \n");
+
         assert(!err);
         all_threads[old_id].thread_state = READY;
 
