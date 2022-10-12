@@ -35,7 +35,7 @@ struct thread {
 
 // Function pre-declarations
 
-static Tid change_threads(struct thread *next_thread);
+//static Tid change_threads(struct thread *next_thread);
 
 /* Threads data structures
  *  - Linked list queue for ready
