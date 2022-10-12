@@ -129,6 +129,7 @@ thread_create (void (*fn) (void *), void *parg)
     for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
         if(all_threads[i].thread_state == UNUSED) {
             new_thread = &all_threads[i];
+            all_tid[i] = 1;
             found_thread = 1;
             break;
         }
@@ -184,6 +185,13 @@ thread_yield (Tid want_tid)
         if (ready_queue_head == ready_queue_tail) {
             return THREAD_NONE;
         }
+
+        struct thread *old_thread = running;
+
+        getcontext(&old_thread->thread_context);
+
+        ready_queue_enqueue(old_thread->thread_id);
+        old_thread->thread_state = READY;
 
         Tid next_thread = ready_queue_dequeue();
 
