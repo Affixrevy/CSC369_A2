@@ -193,7 +193,7 @@ thread_yield (Tid want_tid)
 
         if (!found_ready) return THREAD_NONE;
 
-        printf("************* RUNNING ID: %d \n ************* NEW ID: %d", running->thread_id, next_tid);
+        fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d", running->thread_id, next_tid);
 
         struct thread *old_thread = running;
         getcontext(&old_thread->thread_context);
