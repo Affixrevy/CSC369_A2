@@ -48,23 +48,23 @@ struct thread all_threads[THREAD_MAX_THREADS];
 struct thread *running;
 struct thread *killed;
 
-Tid all_tid[THREAD_MAX_THREADS], ready_queue[THREAD_MAX_THREADS];
+//Tid all_tid[THREAD_MAX_THREADS]; //, ready_queue[THREAD_MAX_THREADS];
 
-int ready_queue_head, ready_queue_tail;
-
-static void ready_queue_enqueue(Tid new_id) {
-    ready_queue[ready_queue_head] = new_id;
-    ready_queue_head++;
-    ready_queue_head %= THREAD_MAX_THREADS;
-}
-
-static Tid ready_queue_dequeue() {
-    Tid result = ready_queue[ready_queue_tail];
-    ready_queue[ready_queue_tail] = READY_QUEUE_NO_ITEM;
-    ready_queue_tail++;
-    ready_queue_tail %= THREAD_MAX_THREADS;
-    return result;
-}
+//int ready_queue_head, ready_queue_tail;
+//
+//static void ready_queue_enqueue(Tid new_id) {
+//    ready_queue[ready_queue_head] = new_id;
+//    ready_queue_head++;
+//    ready_queue_head %= THREAD_MAX_THREADS;
+//}
+//
+//static Tid ready_queue_dequeue() {
+//    Tid result = ready_queue[ready_queue_tail];
+//    ready_queue[ready_queue_tail] = READY_QUEUE_NO_ITEM;
+//    ready_queue_tail++;
+//    ready_queue_tail %= THREAD_MAX_THREADS;
+//    return result;
+//}
 
 void
 thread_init (void)
@@ -76,18 +76,18 @@ thread_init (void)
     memset(all_threads, 0, sizeof all_threads);
 
     for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
-        all_tid[i] = 0;
+//        all_tid[i] = 0;
         all_threads[i].thread_id = i;
         all_threads[i].thread_state = UNUSED;
     }
 
     // Set up ready queue
-    memset(ready_queue, READY_QUEUE_NO_ITEM, sizeof ready_queue);
-    ready_queue_head = 0;
-    ready_queue_tail = 0;
+//    memset(ready_queue, READY_QUEUE_NO_ITEM, sizeof ready_queue);
+//    ready_queue_head = 0;
+//    ready_queue_tail = 0;
 
     // Manually create first thread
-    all_tid[0] = 1;
+//    all_tid[0] = 1;
     all_threads[0].thread_state = RUNNING;
 
     // Set global variables
@@ -100,9 +100,9 @@ Tid
 thread_id ()
 {
     // TBD();
-    if (all_tid[running->thread_id]) {
+//    if (all_tid[running->thread_id]) {
         return running->thread_id;
-    }
+//    }
 
     return THREAD_INVALID;
 }
@@ -129,7 +129,7 @@ thread_create (void (*fn) (void *), void *parg)
     for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
         if(all_threads[i].thread_state == UNUSED) {
             new_thread = &all_threads[i];
-            all_tid[i] = 1;
+//            all_tid[i] = 1;
             found_thread = 1;
             break;
         }
@@ -161,9 +161,7 @@ thread_create (void (*fn) (void *), void *parg)
 
     new_thread->thread_state = READY;
     Tid new_id = new_thread->thread_id;
-    ready_queue_enqueue(new_id);
-//    thread_yield(new_id);
-//    setcontext(&new_thread->thread_context);
+//    ready_queue_enqueue(new_id);
     return new_id;
 }
 
@@ -177,61 +175,67 @@ thread_yield (Tid want_tid)
     if (want_tid == THREAD_ANY) {
         // Get the next available thread
 
-        if (ready_queue_head == ready_queue_tail) {
-            return THREAD_NONE;
+//        if (ready_queue_head == ready_queue_tail) {
+//            return THREAD_NONE;
+//        }
+
+        int found_ready = 0;
+        int current_tid = running->thread_id;
+        Tid next_tid;
+
+        for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
+            if(all_threads[(i + current_tid) % THREAD_MAX_THREADS].thread_state == READY) {
+                next_tid = (i + current_tid) % THREAD_MAX_THREADS;
+                found_ready = 1;
+                break;
+            }
         }
+
+        if (!found_ready) return THREAD_NONE;
+
+        printf("************* RUNNING ID: %d \n************* NEW ID: %d", running->thread_id, next_tid);
 
         struct thread *old_thread = running;
         getcontext(&old_thread->thread_context);
-        ready_queue_enqueue(old_thread->thread_id);
         old_thread->thread_state = READY;
 
-        Tid next_thread = ready_queue_dequeue();
-
-        setcontext(&(all_threads[next_thread].thread_context));
-        running = &all_threads[next_thread];
+        setcontext(&(all_threads[next_tid].thread_context));
+        running = &all_threads[next_tid];
         running->thread_state = RUNNING;
         return thread_id();
 
     } else if (want_tid == THREAD_SELF || want_tid == running->thread_id) {
         // Does nothing as current thread continues
         return thread_id();
-    } else {
+    } else {                        // || !all_tid[want_tid]
         if (want_tid < THREAD_SELF
         || want_tid > THREAD_MAX_THREADS
-        || !all_tid[want_tid]
-        || all_threads[want_tid].thread_state == EXITED) {
+        || all_threads[want_tid].thread_state != READY) {
             // TODO: Kill some zombie processes
 
             return THREAD_INVALID;
         }
 
-        int check_index = ready_queue_tail;
+//        int found_ready = 0;
+//        int check_index = running->thread_id;
+//
+//        // Find requested thread
+//        for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
+//            if (all_threads[(i + check_index) % THREAD_MAX_THREADS].thread_id == want_tid) {
+//                check_index = (i + check_index) % THREAD_MAX_THREADS;
+//                found_ready = 1;
+//                break;
+//            }
+//        }
 
-        // Find requested thread
-        for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
-            if (ready_queue[(i + check_index) % THREAD_MAX_THREADS] == want_tid) {
-                check_index = (i + check_index) % THREAD_MAX_THREADS;
-                goto found_thread;
-            }
-        }
-        return THREAD_NONE;
-        
-        found_thread:
-        ready_queue[check_index] = ready_queue[ready_queue_tail];
-        ready_queue[ready_queue_tail] = READY_QUEUE_NO_ITEM;
-        ready_queue_tail++;
-        ready_queue_tail %= THREAD_MAX_THREADS;
-
+        // get context of currently running thread
         struct thread *old_thread = running;
-
         getcontext(&old_thread->thread_context);
-
         ready_queue_enqueue(old_thread->thread_id);
         old_thread->thread_state = READY;
 
+        // set context for new thread
         running = &all_threads[want_tid];
-        printf("************* RUNNING ID: %d", running->thread_id);
         running->thread_state = RUNNING;
         setcontext(&(all_threads[want_tid].thread_context));
         return thread_id();
@@ -243,7 +247,8 @@ thread_yield (Tid want_tid)
 void
 thread_exit (int exit_code)
 {
-    TBD();
+//    TBD();
+
 }
 
 Tid
