@@ -221,7 +221,7 @@ thread_yield (Tid want_tid)
             err = setcontext(&(all_threads[want_tid].thread_context));
             assert(!err);
         }
-        return thread_id();
+        return want_tid;
     }
 
     return THREAD_FAILED;
