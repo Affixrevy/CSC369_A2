@@ -276,6 +276,7 @@ thread_kill (Tid tid)
     all_threads[tid].thread_state = EXITED;
     killed = tid;
     clean_zombies();
+    return tid;
 
 }
 
