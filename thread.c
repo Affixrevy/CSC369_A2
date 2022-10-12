@@ -229,9 +229,10 @@ thread_yield (Tid want_tid)
 //        }
 
         // get context of currently running thread
-        struct thread *old_thread = &all_threads[running->thread_id];
-        getcontext(&old_thread->thread_context);
-        old_thread->thread_state = READY;
+        Tid old_id = running->thread_id;
+//        struct thread *old_thread = &all_threads[];
+        getcontext(&all_threads[old_id].thread_context);
+        all_threads->thread_state = READY;
 
         // set context for new thread
         running = &all_threads[want_tid];
