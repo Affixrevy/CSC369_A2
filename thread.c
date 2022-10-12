@@ -196,12 +196,14 @@ thread_yield (Tid want_tid)
         fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d", running->thread_id, next_tid);
 
         struct thread *old_thread = running;
-        getcontext(&old_thread->thread_context);
+        int err = getcontext(&(old_thread->thread_context));
+        assert(!err);
         old_thread->thread_state = READY;
 
         running = &all_threads[next_tid];
         running->thread_state = RUNNING;
-        setcontext(&(all_threads[next_tid].thread_context));
+        err = setcontext(&(all_threads[next_tid].thread_context));
+        assert(!err);
         return thread_id();
 
     } else if (want_tid == THREAD_SELF || want_tid == running->thread_id) {
@@ -231,13 +233,15 @@ thread_yield (Tid want_tid)
         // get context of currently running thread
         Tid old_id = running->thread_id;
 //        struct thread *old_thread = &all_threads[];
-        getcontext(&(all_threads[old_id].thread_context));
+        int err = getcontext(&(all_threads[old_id].thread_context));
+        assert(!err);
         all_threads->thread_state = READY;
 
         // set context for new thread
         running = &all_threads[want_tid];
         running->thread_state = RUNNING;
-        setcontext(&(all_threads[want_tid].thread_context));
+        err = setcontext(&(all_threads[want_tid].thread_context));
+        assert(!err);
         return thread_id();
     }
 
@@ -247,8 +251,7 @@ thread_yield (Tid want_tid)
 void
 thread_exit (int exit_code)
 {
-//    TBD();
-
+    TBD();
 }
 
 Tid

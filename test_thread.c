@@ -252,7 +252,6 @@ hello(char *msg)
 	printf("thread returns from second yield\n");
 
 	while (1) {
-        printf("crackhead\n");
 		thread_yield(THREAD_ANY);
 	}
 
