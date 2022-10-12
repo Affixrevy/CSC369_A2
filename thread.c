@@ -194,7 +194,7 @@ thread_yield (Tid want_tid)
 
         if (!found_ready) return THREAD_NONE;
 
-        fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d", running, next_tid);
+        fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d \n", running, next_tid);
 
         Tid old_id = running;
         int err = getcontext(&(all_threads[old_id].thread_context));
@@ -203,11 +203,11 @@ thread_yield (Tid want_tid)
 
         running = next_tid;
         all_threads[next_tid].thread_state = RUNNING;
-        fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d", running, next_tid);
+        fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", old_id, next_tid);
 
         err = setcontext(&(all_threads[next_tid].thread_context));
 
-        fprintf(stderr, "crackhead 2 ************* RUNNING ID: %d \n ************* NEW ID: %d", running, next_tid);
+        fprintf(stderr, "crackhead 2 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", running, next_tid);
 
         assert(!err);
         return thread_id();
