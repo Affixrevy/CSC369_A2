@@ -177,25 +177,21 @@ thread_yield (Tid want_tid)
     if (want_tid == THREAD_ANY) {
         // Get the next available thread
 
-//        int check_index = ready_queue_tail;
-//        while (ready_queue[check_index] == READY_QUEUE_NO_ITEM) {
-//            check_index++;
-//            check_index %= THREAD_MAX_THREADS;
-//        }
         if (ready_queue_head == ready_queue_tail) {
             return THREAD_NONE;
         }
 
         struct thread *old_thread = running;
-
         getcontext(&old_thread->thread_context);
-
         ready_queue_enqueue(old_thread->thread_id);
         old_thread->thread_state = READY;
 
         Tid next_thread = ready_queue_dequeue();
 
-        return change_threads(&all_threads[next_thread]);
+        setcontext(&(all_threads[next_thread].thread_context));
+        running = &all_threads[next_thread];
+        running->thread_state = RUNNING;
+        return thread_id();
 
     } else if (want_tid == THREAD_SELF || want_tid == running->thread_id) {
         // Does nothing as current thread continues
@@ -211,11 +207,8 @@ thread_yield (Tid want_tid)
         }
 
         int check_index = ready_queue_tail;
-//        while (ready_queue[check_index] != want_tid) {
-//            check_index++;
-//            check_index %= THREAD_MAX_THREADS;
-//        }
 
+        // Find requested thread
         for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
             if (ready_queue[(i + check_index) % THREAD_MAX_THREADS] == want_tid) {
                 check_index = (i + check_index) % THREAD_MAX_THREADS;
@@ -230,8 +223,6 @@ thread_yield (Tid want_tid)
         ready_queue_tail++;
         ready_queue_tail %= THREAD_MAX_THREADS;
 
-//        return change_threads(&);
-
         struct thread *old_thread = running;
 
         getcontext(&old_thread->thread_context);
@@ -239,9 +230,9 @@ thread_yield (Tid want_tid)
         ready_queue_enqueue(old_thread->thread_id);
         old_thread->thread_state = READY;
 
-        setcontext(&(all_threads[want_tid].thread_context));
         running = &all_threads[want_tid];
         running->thread_state = RUNNING;
+        setcontext(&(all_threads[want_tid].thread_context));
         return thread_id();
     }
 
@@ -261,19 +252,19 @@ thread_kill (Tid tid)
     return THREAD_FAILED;
 }
 
-Tid change_threads (struct thread *next_thread) {
-
-    setcontext(&next_thread->thread_context);
-
-    running = next_thread;
-
-    if (thread_id() == next_thread->thread_id) {
-        return thread_id();
-    }
-
-    return THREAD_FAILED;
-
-}
+//Tid change_threads (struct thread *next_thread) {
+//
+//    setcontext(&next_thread->thread_context);
+//
+//    running = next_thread;
+//
+//    if (thread_id() == next_thread->thread_id) {
+//        return thread_id();
+//    }
+//
+//    return THREAD_FAILED;
+//
+//}
 
 /**************************************************************************
  * Important: The rest of the code should be implemented in Assignment 3. *
