@@ -231,6 +231,7 @@ thread_yield (Tid want_tid)
         old_thread->thread_state = READY;
 
         running = &all_threads[want_tid];
+        printf("************* RUNNING ID: %d", running->thread_id);
         running->thread_state = RUNNING;
         setcontext(&(all_threads[want_tid].thread_context));
         return thread_id();
