@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <ucontext.h>
 #include <string.h>
-#include <setjmp.h>
+//#include <setjmp.h>
 #include "thread.h"
 #include "interrupt.h"
 
@@ -193,7 +193,7 @@ thread_yield (Tid want_tid)
 
         if (!found_ready) return THREAD_NONE;
 
-        printf("************* RUNNING ID: %d \n************* NEW ID: %d", running->thread_id, next_tid);
+        printf("************* RUNNING ID: %d \n ************* NEW ID: %d", running->thread_id, next_tid);
 
         struct thread *old_thread = running;
         getcontext(&old_thread->thread_context);
@@ -231,7 +231,6 @@ thread_yield (Tid want_tid)
         // get context of currently running thread
         struct thread *old_thread = running;
         getcontext(&old_thread->thread_context);
-//        ready_queue_enqueue(old_thread->thread_id);
         old_thread->thread_state = READY;
 
         // set context for new thread
