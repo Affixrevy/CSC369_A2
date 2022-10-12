@@ -267,7 +267,7 @@ Tid
 thread_kill (Tid tid)
 {
 //    TBD();
-    if (all_threads[tid].thread_state != READY) return THREAD_INVALID;
+    if (tid <= 0 || tid > THREAD_MAX_THREADS || all_threads[tid].thread_state != READY) return THREAD_INVALID;
 
     all_threads[tid].thread_state = EXITED;
     killed = tid;
