@@ -103,7 +103,9 @@ void clean_zombies() {
 void
 thread_stub (void (*thread_main)(void *), void *arg)
 {
-	thread_main(arg); // call thread_main() function with arg
+	clean_zombies();
+
+    thread_main(arg); // call thread_main() function with arg
 	thread_exit(0);
 }
 
@@ -176,7 +178,10 @@ thread_yield (Tid want_tid)
             }
         }
 
-        if (!found_ready) return THREAD_NONE;
+        if (!found_ready) {
+            clean_zombies();
+            return THREAD_NONE;
+        }
 
         int err = getcontext(&(all_threads[current_tid].thread_context));
         if (!triggered) {
@@ -196,6 +201,7 @@ thread_yield (Tid want_tid)
 
     } else if (want_tid == THREAD_SELF || want_tid == running) {
         // Does nothing as current thread continues
+        clean_zombies();
         return thread_id();
     } else {                        // || !all_tid[want_tid]
         if (want_tid < THREAD_SELF
