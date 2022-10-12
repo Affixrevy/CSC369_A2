@@ -147,14 +147,14 @@ thread_create (void (*fn) (void *), void *parg)
     new_thread_context = &new_thread->thread_context;
     getcontext(new_thread_context);
 
-    new_thread_context->uc_mcontext.gregs[REG_RIP] = (unsigned long) thread_stub;      // Set program counter
+    new_thread_context->uc_mcontext.gregs[REG_RIP] = (unsigned long) thread_stub;       // Set program counter
     new_thread_context->uc_mcontext.gregs[REG_RDI] = (unsigned long) fn;                // Set up arguments
     new_thread_context->uc_mcontext.gregs[REG_RSI] = (unsigned long) parg;              // Set up arguments
 
     new_thread_context->uc_stack.ss_sp = stack_ptr;                                     // Set thread stack
     new_thread_context->uc_stack.ss_size = THREAD_MIN_STACK;                            // Set thread stack size
 
-    void *stack_start = stack_ptr + THREAD_MIN_STACK - 8;
+    void *stack_start = stack_ptr + THREAD_MIN_STACK - sizeof(long);
     new_thread_context->uc_mcontext.gregs[REG_RSP] = (unsigned long) stack_start;       // Start of the stack since
                                                                                         // stacks grow down
 
