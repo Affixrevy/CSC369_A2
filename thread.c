@@ -46,24 +46,6 @@ struct thread all_threads[THREAD_MAX_THREADS];
 
 Tid running, killed;
 
-//Tid all_tid[THREAD_MAX_THREADS]; //, ready_queue[THREAD_MAX_THREADS];
-
-//int ready_queue_head, ready_queue_tail;
-//
-//static void ready_queue_enqueue(Tid new_id) {
-//    ready_queue[ready_queue_head] = new_id;
-//    ready_queue_head++;
-//    ready_queue_head %= THREAD_MAX_THREADS;
-//}
-//
-//static Tid ready_queue_dequeue() {
-//    Tid result = ready_queue[ready_queue_tail];
-//    ready_queue[ready_queue_tail] = READY_QUEUE_NO_ITEM;
-//    ready_queue_tail++;
-//    ready_queue_tail %= THREAD_MAX_THREADS;
-//    return result;
-//}
-
 void
 thread_init (void)
 {
@@ -106,7 +88,18 @@ thread_id ()
 }
 
 void clean_zombies() {
+    if (killed != -1) {
+        if (killed != 0) {
+            free(all_threads[killed].thread_context.uc_stack.ss_sp);
+            memset(&all_threads[killed], 0, sizeof (struct thread));
+            all_threads[killed].thread_state = UNUSED;
+            all_threads[killed].thread_id = killed;
+        } else {
+//            memset()
+        }
+    }
 
+    killed = -1;
 }
 
 /* New thread starts by calling thread_stub. The arguments to thread_stub are
@@ -221,7 +214,7 @@ thread_yield (Tid want_tid)
         if (want_tid < THREAD_SELF
         || want_tid > THREAD_MAX_THREADS
         || all_threads[want_tid].thread_state != READY) {
-            // TODO: Kill some zombie processes
+            clean_zombies();
 
             return THREAD_INVALID;
         }
@@ -247,14 +240,43 @@ thread_yield (Tid want_tid)
 void
 thread_exit (int exit_code)
 {
-    TBD();
+    Tid exit_id = running;
+    all_threads[exit_id].thread_state = EXITED;
+    killed = exit_id;
+
+    int found_ready = 0;
+    int current_tid = running;
+    Tid next_tid;
+
+    for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
+        if(all_threads[(i + current_tid) % THREAD_MAX_THREADS].thread_state == READY) {
+            next_tid = (i + current_tid) % THREAD_MAX_THREADS;
+            found_ready = 1;
+            break;
+        }
+    }
+
+    if (!found_ready) {
+        exit(exit_code);
+    }
+
+    running = next_tid;
+    all_threads[next_tid].thread_state = RUNNING;
+    int err = setcontext(&(all_threads[next_tid].thread_context));
+    assert(!err);
+
 }
 
 Tid
 thread_kill (Tid tid)
 {
-    TBD();
-    return THREAD_FAILED;
+//    TBD();
+    if (all_threads[tid].thread_state != READY) return THREAD_INVALID;
+
+    all_threads[tid].thread_state = EXITED;
+    killed = tid;
+    clean_zombies();
+
 }
 
 //Tid change_threads (struct thread *next_thread) {
