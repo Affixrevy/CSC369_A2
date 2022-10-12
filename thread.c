@@ -164,13 +164,8 @@ thread_yield (Tid want_tid)
 
     if (want_tid == THREAD_ANY) {
         // Get the next available thread
-
-//        if (ready_queue_head == ready_queue_tail) {
-//            return THREAD_NONE;
-//        }
-
         int found_ready = 0;
-        int current_tid = running;
+        Tid current_tid = running;
         Tid next_tid;
 
         for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
@@ -185,17 +180,16 @@ thread_yield (Tid want_tid)
 
         fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d \n", running, next_tid);
 
-        Tid old_id = running;
-        int err = getcontext(&(all_threads[old_id].thread_context));
+        int err = getcontext(&(all_threads[current_tid].thread_context));
         fprintf(stderr, "wahoooooo! \n");
 
         assert(!err);
-        all_threads[old_id].thread_state = READY;
+        all_threads[current_tid].thread_state = READY;
 
-        fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", old_id, next_tid);
         running = next_tid;
         all_threads[next_tid].thread_state = RUNNING;
 
+        fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", current_tid, next_tid);
         err = setcontext(&(all_threads[next_tid].thread_context));
 
         fprintf(stderr, "crackhead 2 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", running, next_tid);
