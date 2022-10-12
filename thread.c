@@ -189,11 +189,11 @@ thread_yield (Tid want_tid)
         assert(!err);
         all_threads[old_id].thread_state = READY;
 
+        fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", old_id, next_tid);
         running = next_tid;
         all_threads[next_tid].thread_state = RUNNING;
-        fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", old_id, next_tid);
 
-        err = setcontext(&(all_threads[0].thread_context));
+        err = setcontext(&(all_threads[next_tid].thread_context));
 
         fprintf(stderr, "crackhead 2 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", running, next_tid);
 
