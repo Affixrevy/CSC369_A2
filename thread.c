@@ -162,7 +162,7 @@ thread_create (void (*fn) (void *), void *parg)
     new_thread_context->uc_mcontext.gregs[REG_RSP] = (unsigned long) stack_start;       // Start of the stack since
                                                                                         // stacks grow down
 
-    new_thread->thread_state = READY;
+    all_threads[found_id].thread_state = READY;
     Tid new_id = new_thread->thread_id;
 //    ready_queue_enqueue(new_id);
     return new_id;
