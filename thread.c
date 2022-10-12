@@ -134,8 +134,11 @@ thread_create (void (*fn) (void *), void *parg)
 
     // Set up thread context
 //    new_thread_context = &new_thread->thread_context;
+
+    int err = getcontext(&all_threads[found_id].thread_context);
+    assert(!err);
+
     new_thread_context = &all_threads[found_id].thread_context;
-    getcontext(new_thread_context);
 
     new_thread_context->uc_mcontext.gregs[REG_RIP] = (unsigned long) thread_stub;       // Set program counter
     new_thread_context->uc_mcontext.gregs[REG_RDI] = (unsigned long) fn;                // Set up arguments
