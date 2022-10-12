@@ -28,9 +28,8 @@ enum thread_states {READY = 0, RUNNING = 1, EXITED = 2, UNUSED = 3};
 struct thread {
     /* ... Fill this in ... */
     Tid thread_id;
-    // struct thread *next_thread;     // The next thread in the queue to executed
-    int thread_state;               // This can have three states: READY (0), RUNNING (1), EXITED (2)
-    ucontext_t thread_context;      // Save the context of the thread
+    enum thread_states thread_state;        // This can have three states: READY (0), RUNNING (1), EXITED (2)
+    ucontext_t thread_context;              // Save the context of the thread
 };
 
 // Function pre-declarations
@@ -45,8 +44,7 @@ struct thread {
 
 struct thread all_threads[THREAD_MAX_THREADS];
 
-struct thread *running;
-struct thread *killed;
+Tid running, killed;
 
 //Tid all_tid[THREAD_MAX_THREADS]; //, ready_queue[THREAD_MAX_THREADS];
 
@@ -91,8 +89,8 @@ thread_init (void)
     all_threads[0].thread_state = RUNNING;
 
     // Set global variables
-    running = &all_threads[0];
-    killed = NULL;
+    running = 0;
+    killed = -1;
     
 }
 
@@ -101,10 +99,14 @@ thread_id ()
 {
     // TBD();
 //    if (all_tid[running->thread_id]) {
-        return running->thread_id;
+        return running;
 //    }
 
     return THREAD_INVALID;
+}
+
+void clean_zombies() {
+
 }
 
 /* New thread starts by calling thread_stub. The arguments to thread_stub are
@@ -179,7 +181,7 @@ thread_yield (Tid want_tid)
 //        }
 
         int found_ready = 0;
-        int current_tid = running->thread_id;
+        int current_tid = running;
         Tid next_tid;
 
         for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
@@ -192,20 +194,20 @@ thread_yield (Tid want_tid)
 
         if (!found_ready) return THREAD_NONE;
 
-        fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d", running->thread_id, next_tid);
+        fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d", running, next_tid);
 
         struct thread *old_thread = running;
         int err = getcontext(&(old_thread->thread_context));
         assert(!err);
         old_thread->thread_state = READY;
 
-        running = &all_threads[next_tid];
-        running->thread_state = RUNNING;
+        running = next_tid;
+        all_threads[next_tid].thread_state = RUNNING;
         err = setcontext(&(all_threads[next_tid].thread_context));
         assert(!err);
         return thread_id();
 
-    } else if (want_tid == THREAD_SELF || want_tid == running->thread_id) {
+    } else if (want_tid == THREAD_SELF || want_tid == running) {
         // Does nothing as current thread continues
         return thread_id();
     } else {                        // || !all_tid[want_tid]
@@ -217,28 +219,16 @@ thread_yield (Tid want_tid)
             return THREAD_INVALID;
         }
 
-//        int found_ready = 0;
-//        int check_index = running->thread_id;
-//
-//        // Find requested thread
-//        for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
-//            if (all_threads[(i + check_index) % THREAD_MAX_THREADS].thread_id == want_tid) {
-//                check_index = (i + check_index) % THREAD_MAX_THREADS;
-//                found_ready = 1;
-//                break;
-//            }
-//        }
 
         // get context of currently running thread
-        Tid old_id = running->thread_id;
-//        struct thread *old_thread = &all_threads[];
+        Tid old_id = running;
         int err = getcontext(&(all_threads[old_id].thread_context));
         assert(!err);
         all_threads->thread_state = READY;
 
         // set context for new thread
-        running = &all_threads[want_tid];
-        running->thread_state = RUNNING;
+        running = want_tid;
+        all_threads[want_tid].thread_state = RUNNING;
         err = setcontext(&(all_threads[want_tid].thread_context));
         assert(!err);
         return thread_id();
