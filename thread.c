@@ -199,7 +199,7 @@ thread_yield (Tid want_tid)
         getcontext(&old_thread->thread_context);
         old_thread->thread_state = READY;
 
-        setcontext(&(all_threads[next_tid].thread_context));
+        setcontext(&all_threads[next_tid].thread_context);
         running = &all_threads[next_tid];
         running->thread_state = RUNNING;
         return thread_id();
