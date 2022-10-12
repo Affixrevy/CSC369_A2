@@ -135,7 +135,7 @@ thread_create (void (*fn) (void *), void *parg)
     // Set up thread context
 //    new_thread_context = &new_thread->thread_context;
 
-    int err = getcontext(&all_threads[found_id].thread_context);
+    int err = getcontext(&(all_threads[found_id].thread_context));
     assert(!err);
 
     new_thread_context = &all_threads[found_id].thread_context;
@@ -161,7 +161,7 @@ thread_yield (Tid want_tid)
 
     // TODO: SUGGESTED FIRST
     // TBD();
-
+    int triggered = 0;
     if (want_tid == THREAD_ANY) {
         // Get the next available thread
         int found_ready = 0;
@@ -180,17 +180,22 @@ thread_yield (Tid want_tid)
 
         fprintf(stderr, "************* RUNNING ID: %d \n ************* NEW ID: %d \n", running, next_tid);
 
+
         int err = getcontext(&(all_threads[current_tid].thread_context));
-        fprintf(stderr, "wahoooooo! \n");
+        if (!triggered) {
+            triggered = 1;
+            fprintf(stderr, "wahoooooo! \n");
 
-        assert(!err);
-        all_threads[current_tid].thread_state = READY;
+            assert(!err);
+            all_threads[current_tid].thread_state = READY;
 
-        running = next_tid;
-        all_threads[next_tid].thread_state = RUNNING;
+            running = next_tid;
+            all_threads[next_tid].thread_state = RUNNING;
 
-        fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", current_tid, next_tid);
-        err = setcontext(&(all_threads[next_tid].thread_context));
+            fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", current_tid,
+                    next_tid);
+            err = setcontext(&(all_threads[next_tid].thread_context));
+        }
 
         fprintf(stderr, "crackhead 2 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", running, next_tid);
 
@@ -213,15 +218,18 @@ thread_yield (Tid want_tid)
         // get context of currently running thread
         Tid old_id = running;
         int err = getcontext(&(all_threads[old_id].thread_context));
-        assert(!err);
-        all_threads->thread_state = READY;
+        if (!triggered) {
+            triggered = 1;
+            assert(!err);
+            all_threads->thread_state = READY;
 
-        // set context for new thread
-        running = want_tid;
-        all_threads[want_tid].thread_state = RUNNING;
-        err = setcontext(&(all_threads[want_tid].thread_context));
-        assert(!err);
-        return thread_id();
+            // set context for new thread
+            running = want_tid;
+            all_threads[want_tid].thread_state = RUNNING;
+            err = setcontext(&(all_threads[want_tid].thread_context));
+            assert(!err);
+            return thread_id();
+        }
     }
 
     return THREAD_FAILED;
