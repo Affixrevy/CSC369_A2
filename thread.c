@@ -79,12 +79,7 @@ thread_init (void)
 Tid
 thread_id ()
 {
-    // TBD();
-//    if (all_tid[running->thread_id]) {
-        return running;
-//    }
-
-    return THREAD_INVALID;
+    return running;
 }
 
 void clean_zombies() {
@@ -115,8 +110,6 @@ thread_stub (void (*thread_main)(void *), void *arg)
 Tid
 thread_create (void (*fn) (void *), void *parg)
 {
-    //TBD();
-//    struct thread *new_thread;
     ucontext_t *new_thread_context;
 
     // Get a Tid for new thread
@@ -200,7 +193,7 @@ thread_yield (Tid want_tid)
         all_threads[next_tid].thread_state = RUNNING;
         fprintf(stderr, "crackhead 1 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", old_id, next_tid);
 
-        err = setcontext(&(all_threads[next_tid].thread_context));
+        err = setcontext(&(all_threads[0].thread_context));
 
         fprintf(stderr, "crackhead 2 ************* RUNNING ID: %d \n ************* NEW ID: %d \n", running, next_tid);
 
