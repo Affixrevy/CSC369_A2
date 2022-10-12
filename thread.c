@@ -128,16 +128,17 @@ thread_create (void (*fn) (void *), void *parg)
 
     // Get a Tid for new thread
     int found_thread = 0;
+    Tid found_id;
     for (int i = 0; i < THREAD_MAX_THREADS; ++i) {
         if(all_threads[i].thread_state == UNUSED) {
-            new_thread = &all_threads[i];
+            found_id = i;
             found_thread = 1;
             break;
         }
     }
 
-    if (!found_thread)
-        return THREAD_NOMORE;
+    if (!found_thread) return THREAD_NOMORE;
+
 
     // Allocate memory for the thread
     void *stack_ptr = malloc(THREAD_MIN_STACK);
@@ -146,7 +147,8 @@ thread_create (void (*fn) (void *), void *parg)
     }
 
     // Set up thread context
-    new_thread_context = &new_thread->thread_context;
+//    new_thread_context = &new_thread->thread_context;
+    new_thread_context = &all_threads[found_id].thread_context;
     getcontext(new_thread_context);
 
     new_thread_context->uc_mcontext.gregs[REG_RIP] = (unsigned long) thread_stub;       // Set program counter
