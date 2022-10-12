@@ -75,6 +75,7 @@ test_basic()
 	printf("my id is %d\n", thread_id());
 	assert(thread_ret_ok(ret));
 	ret2 = thread_yield(ret);
+    printf("ret: %d, ret2: %d\n", ret, ret2);
 	assert(ret2 == ret);
 
 	/* store address of some variable on stack */
