@@ -123,7 +123,7 @@ Tid
 thread_create (void (*fn) (void *), void *parg)
 {
     //TBD();
-    struct thread *new_thread;
+//    struct thread *new_thread;
     ucontext_t *new_thread_context;
 
     // Get a Tid for new thread
